@@ -1,11 +1,11 @@
 Geoblast dev plan
 -----------------
 
-Geoblast is being built with [Pulse].
+Geoblast is being built with [Pulse].  
 
-Graphics:
+Graphics:  
 
-1) a spaceship (height 40px, width 40px) and a version of the spaceship with a force field around it (to fit within 45px from the spaceship's center)
+1) a spaceship (height 40px, width 40px) and a version of the spaceship with a force field around it (to fit within 45px from the spaceship's center)  
 2) four different shapes, with large (fits in 50x50), medium (fits in 40x40), and small (fits in 25x25) sizes of each.  The shapes are:
 
    - square
@@ -13,15 +13,15 @@ Graphics:
    - triangle
    - pentagon
 
-3) three sizes (fitting in 25x25, 40x40, and 60x60) of fireballs with different shapes (or maybe explosion animations instead).
-4) a missile (30x8)
-5) a 1024x768 star field (black sky with stars in random locations).
+3) three sizes (fitting in 25x25, 40x40, and 60x60) of fireballs with different shapes (or maybe explosion animations instead).  
+4) a missile (30x8)  
+5) a 1024x768 star field (black sky with stars in random locations).  
 
-The framerate will be 48fps.
+The framerate will be 48fps.  
 
-Gameplay:
+Gameplay:  
 
-The game will be played within a canvas that will be 800x600 (the star field will move around if moving layers slowly does not strain the browser too much).  The spaceship will be able to fly and shoot missiles in any direction while shapes come from different directions and try to collide with it.  One collision will destroy the spaceship.  The player will start with three spaceships ("lifes").
+The game will be played within a canvas that will be 800x600 (the star field will move around if moving layers slowly does not strain the browser too much).  The spaceship will be able to fly and shoot missiles in any direction while shapes come from different directions and try to collide with it.  One collision will destroy the spaceship.  The player will start with three spaceships ("lifes").  
  
 In Level 1, the shapes will be large and move slowly.  
 In Level 2, the shapes will be medium size and move slowly.  
