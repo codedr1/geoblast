@@ -1,11 +1,18 @@
 // Namespace declaration
 var gb = gb || { };
-
 /**
  * Pulse ready callback, makes sure the HTML content is loaded before starting
  * the game.
  */
 pulse.ready(function() {
+    
+    function pausecomp(ms) {
+        ms += new Date().getTime();
+        while (new Date() < ms){}
+    } 
+
+    gb.lifeTotal = 3;
+    gb.levelNum = 1;
   // Ratio of Box2D physics to pulse
   gb.Box2DFactor = 0.01;
 
@@ -14,13 +21,26 @@ pulse.ready(function() {
     var contactListener = new Box2D.Dynamics.b2ContactListener;
 
     contactListener.BeginContact = function(contact) {
-        if ((typeof contact.GetFixtureA().GetBody()._node !== 'undefined') && (typeof contact.GetFixtureB().GetBody()._node !== 'undefined')) {
-           if ((contact.GetFixtureA().GetBody().size.height == 60)  || (contact.GetFixtureB().GetBody().size.height == 60))
-                alert("Bam!!!");
+        if ((typeof contact.GetFixtureA().GetBody()._node !== 'undefined') && (typeof contact.GetFixtureB().GetBody()._node !== 'undefined')
+            && (typeof gb.playerShip !== 'undefined')) {
+            var nodeA = contact.GetFixtureA();  //.GetBody()._node;
+            var nodeB = contact.GetFixtureB();  //.GetBody()._node;
+            
+            // check that colliding bodies are not missile and playerShip
+            if (!((nodeA.GetBody()._node.size.height == 50) && (nodeB.GetBody()._node.size.height == 60) ||
+                  (nodeA.GetBody()._node.size.height == 60) && (nodeB.GetBody()._node.size.height == 50))) {
+                if (gb.playerShip) {
+                    var explodeA = new gb.explode(nodeA, shipLayer, gb.playerShip);
+                }// alert("here");
+                if (gb.playerShip) {
+                    var explodeB = new gb.explode(nodeB, shipLayer, gb.playerShip);
+                }
+                else {
+                    var explodeB = new gb.explode(nodeB, shipLayer, null);
+                }
+                // alert("there");
+            }
         }
-        var dummyVar = contact.GetFixtureA().GetBody()._node;
-        var dummyVar2 = contact.GetFixtureB().GetBody()._node;
-        var dummyVar3 = contact.GetFixtureA().GetBody()._node;
     };
 
       pulse.physics.WORLD.SetContactListener(contactListener);
@@ -91,15 +111,32 @@ pulse.ready(function() {
     bg2.addNode(bgTile);
   }*/
   // The ship, along with initialized position
-  var playerShip = new gb.spaceship({
-    b2world : world, // pulse.physics.WORLD,
-    position : {
-      x : 500,
-      y : 650
-    }
-  });
-  shipLayer.addNode(playerShip);
+    function createPlayerShip() {
+      var playerShip = new gb.spaceship({
+            b2world : pulse.physics.WORLD,  //world, //
+            position : {
+                x : 500,
+                y : 650
+            }
+        });
+      shipLayer.addNode(playerShip);
+      playerShip._physics.body._node = playerShip;
+      return playerShip;
+  }
 
+    var playerShip2 = new gb.spaceship({
+        b2world : pulse.physics.WORLD,  //world, //
+        position : {
+            x : 200,
+            y : 250
+        }
+    });
+    shipLayer.addNode(playerShip2);
+    playerShip2._physics.body._node = playerShip2;
+//playerShip._physics.bodyDef.m
+//    playerShip._physics.bodyDef.massData.mass = 2.0;
+//    playerShip._physics.bodyDef.massData.center.SetZero();
+//    playerShip._physics.bodyDef.massData.I = Number.POSITIVE_INFINITY;
 
   // Setup UI
   //var font = new pulse.BitmapFont({filename:'eboots.fnt'});
@@ -112,7 +149,7 @@ pulse.ready(function() {
   // scene.addLayer(bg2);
   scene.addLayer(bg1);
   scene.addLayer(level);
-  scene.addLayer(shipLayer)
+  scene.addLayer(shipLayer);
   scene.addLayer(uiLayer);
 
   // Add the scene to the engine scene manager and activate it
@@ -155,126 +192,57 @@ pulse.ready(function() {
     
     // update the Box2D physics world
     world.Step(elapsed / 1000, 10);
-    
-    /**
-     * If the left arrow is down update the state of the ship if needed
-     */
-    if(arrowLeft) {
-      if(playerShip.direction == gb.spaceship.Direction.Right) {
-        playerShip.direction = gb.spaceship.Direction.Left;
+    // if (gb.lifeTotal < 3) { pausecomp(5000); alert(typeof gb.playerShip);}
+      if ((typeof gb.playerShip === 'undefined') || (gb.playerShip._physics.body == null) || (gb.playerShip.visible == false)) {  //(typeof gb.playerShip === 'undefined') || (typeof gb.playerShip === 'null')) {
+          alert('make it');
+          gb.playerShip = createPlayerShip();
       }
-/*      if(playerShip.state != gb.spaceship.State.Jumping) {
-        playerShip.state = gb.spaceship.State.Running;
-      }*/
-      // Box2d wake up call
-      playerShip._physics.body.WakeUp;
-      // Gives the ship a linear velocity in the direction on the move
-      playerShip._physics.body.SetLinearVelocity(new b2Vec2(-2, playerShip._physics.body.GetLinearVelocity().y));
-    }
-    
-    /**
-     * If the right arrow is down update the state of the ship if needed
-     */
-    if(arrowRight) {
-      if(playerShip.direction == gb.spaceship.Direction.Left) {
-        playerShip.direction = gb.spaceship.Direction.Right;
-      }
-/*      if(playerShip.state != gb.spaceship.State.Jumping) {
-        playerShip.state = gb.spaceship.State.Running;
-      }*/
-      // Box2d wake up call
-      playerShip._physics.body.WakeUp;
-      // Gives the ship a linear velocity in the direction on the move
-      playerShip._physics.body.SetLinearVelocity(new b2Vec2(2, playerShip._physics.body.GetLinearVelocity().y));
-    }
-
-      /**
-       * If the up arrow is up update the state of the ship if needed
-       */
-      if(arrowUp) {
-          if(playerShip.direction == gb.spaceship.Direction.Right) {
-              playerShip.direction = gb.spaceship.Direction.Left;
-          }
-/*          if(playerShip.state != gb.spaceship.State.Jumping) {
-              playerShip.state = gb.spaceship.State.Running;
-          }*/
-          // Box2d wake up call
-          playerShip._physics.body.WakeUp;
-          // Gives the ship a linear velocity in the direction on the move
-          playerShip._physics.body.SetLinearVelocity(new b2Vec2(playerShip._physics.body.GetLinearVelocity().x, -2));
-      }
-
-      /**
-       * If the down arrow is down update the state of the ship if needed
-       */
-      if(arrowDown) {
-          if(playerShip.direction == gb.spaceship.Direction.Left) {
-              playerShip.direction = gb.spaceship.Direction.Right;
-          }
-/*          if(playerShip.state != gb.spaceship.State.Jumping) {
-              playerShip.state = gb.spaceship.State.Running;
-          }*/
-          // Box2d wake up call
-          playerShip._physics.body.WakeUp;
-          // Gives the ship a linear velocity in the direction on the move
-          playerShip._physics.body.SetLinearVelocity(new b2Vec2(playerShip._physics.body.GetLinearVelocity().x, 2));
-      }
-
-       var xfrmAngle = playerShip._physics.body.GetAngle();
-       var newAngle = xfrmAngle;
+       // var gb.playerShip = gb.playerShip;
+       var newAngle = gb.playerShip._physics.body.GetAngle();
+       var newXvec = gb.playerShip._physics.body.GetLinearVelocity().x;
+       var newYvec = gb.playerShip._physics.body.GetLinearVelocity().y;
        var xAng = 0;
        var yAng = 0;
          if (arrowLeft) {
              xAng = 3.1415927;
+             newXvec = -2;
          }
          if (arrowRight) {
              xAng = 2*3.1415927;
+             newXvec = 2;
          }
          if (arrowDown) {
              yAng = 3.1415927/2;
+             newYvec = 2;
          }
          if (arrowUp) {
              yAng = -3.1415927/2;
+             newYvec = -2;
          }
-      //if ((xAng != 0) || (yAng != 0)) {
+
          if (arrowLeft || arrowDown || arrowRight || arrowUp) {
-             newAngle = (xAng+yAng);
-             if ((xAng != 0) && (yAng != 0)) {
+             newAngle = (xAng + yAng);
+             if (xAng * yAng != 0) {
                  newAngle /= 2;
                  if (!(arrowLeft && arrowDown)) {
-                     newAngle += 3.1415926;
+                     newAngle += 3.1415927;
                  }
              }
              newAngle += (3.1415927/2);
          }
-/*          if (vecY != 0.01) {
-              newAngle += 3*3.1415927/2;
-          }
-          if (vecX != 0.01) {
-              newAngle += 3.1415927;
-          }*/
-     // }
-       playerShip._physics.body.SetAngle(newAngle);
+
+      gb.playerShip._physics.body.SetAngle(newAngle);
+      gb.playerShip._physics.body.SetAwake(true);
+      // Gives the ship a linear velocity in the direction on the move
+      gb.playerShip._physics.body.SetLinearVelocity(new b2Vec2(newXvec, newYvec));
 
     // Update the camera based on the position of the ship
-    updateCamera();
-
-    // If the ship collides with a shape, explode, check lives and take appropriate action
-    // TODO change to collision handling
-/*    if(playerShip.position.y > 2000) {
-      // Box2d wake up call
-      playerShip.b2body.WakeUp();
-      // Set position and remove any linear velocity
-      playerShip.b2body.SetXForm(new b2Vec2(50 * gb.Box2DFactor, 600 * gb.Box2DFactor), 0);
-      playerShip.b2body.SetLinearVelocity(new b2Vec2(0, 0));
-      // Set the ship's state to beam him in
-      playerShip.state = gb.spaceship.State.Intro;
-    }*/
+    // updateCamera();
 
     // If no arrow button is pressed than set the ship to Idle
     if(!arrowLeft && !arrowRight && !arrowDown && !arrowUp) {
-      if(playerShip.state == gb.spaceship.State.Running) {
-        playerShip.state = gb.spaceship.State.Idle;
+      if(gb.playerShip.state == gb.spaceship.State.Running) {
+        gb.playerShip.state = gb.spaceship.State.Idle;
       }
     }
   }
@@ -283,7 +251,7 @@ pulse.ready(function() {
         //var missile = "";
         if (((engine.masterTime - lastFire) > 300) || (lastFire == 0)) {
             var missile =        //new pulse.Sprite({
-                new gb.Missile({ position: pos, direction: dir, layer: lyr, ship: playerShip });
+                new gb.Missile({ position: pos, direction: dir, layer: lyr, ship: gb.playerShip });
     //            src: 'brick_platform.png',
     //            physics: {
     //                basicShape : 'box'
@@ -316,6 +284,8 @@ pulse.ready(function() {
 
 
   scene.events.bind('keydown', function(e) {
+    
+    
     if(e.keyCode == 37) {
       arrowLeft = true;
     }
@@ -338,20 +308,23 @@ pulse.ready(function() {
     if(e.keyCode == 83) {  // s key
       // playerShip.state = gb.spaceship.State.Smile;
     }
-      if(e.keyCode == 86) {  // v key - fire missile left
-          //alert(JSON.stringify(playerShip.b2body.GetPosition(), null, 4));
-          var newMissile = createMissile(playerShip.b2body.GetPosition(), 'left', shipLayer);
-          //missileGen._physics.body.ApplyImpulse(new b2Vec2(-8, 0), missileGen._physics.body.GetPosition());
+    
+    if ((gb.playerShip._physics.body !== 'undefined') && (gb.playerShip._physics.body !== 'null'))  {
+        if(e.keyCode == 86) {  // v key - fire missile left
+            //alert(JSON.stringify(playerShip._physics.body.GetPosition(), null, 4));
+            var newMissile = createMissile(gb.playerShip._physics.body.GetPosition(), 'left', shipLayer);
+            //missileGen._physics.body.ApplyImpulse(new b2Vec2(-8, 0), missileGen._physics.body.GetPosition());
+        }
+        if(e.keyCode == 66) {  // b key
+            var missileGen = createMissile(gb.playerShip._physics.body.GetPosition(), 'up', shipLayer);
+        }
+        if(e.keyCode == 78) {  // n key
+            var missileGen = createMissile(gb.playerShip._physics.body.GetPosition(), 'right', shipLayer);
+        }
+      // fire missile down with space key
+      if(e.keyCode == 32) {
+          var missileGen = createMissile(gb.playerShip._physics.body.GetPosition(), 'down', shipLayer);
       }
-      if(e.keyCode == 66) {  // b key
-          var missileGen = createMissile(playerShip.b2body.GetPosition(), 'up', shipLayer);
-      }
-      if(e.keyCode == 78) {  // n key
-          var missileGen = createMissile(playerShip.b2body.GetPosition(), 'right', shipLayer);
-      }
-    // fire missile down with space key
-    if(e.keyCode == 32) {
-        var missileGen = createMissile(playerShip.b2body.GetPosition(), 'down', shipLayer);
     }
   });
 
@@ -359,22 +332,24 @@ pulse.ready(function() {
    * Update the state of the keys
    */
   scene.events.bind('keyup', function(e) {
-    if(e.keyCode == 37) {
-        playerShip._physics.body.SetLinearVelocity(new b2Vec2(0, playerShip._physics.body.GetLinearVelocity().y));
-        arrowLeft = false;
-    }
-    if(e.keyCode == 39) {
-        playerShip._physics.body.SetLinearVelocity(new b2Vec2(0, playerShip._physics.body.GetLinearVelocity().y));
-        arrowRight = false;
-    }
-    if(e.keyCode == 38) {
-        playerShip._physics.body.SetLinearVelocity(new b2Vec2(playerShip._physics.body.GetLinearVelocity().x, 0));
-        arrowUp = false;
-    }
-    if(e.keyCode == 40) {
-        playerShip._physics.body.SetLinearVelocity(new b2Vec2(playerShip._physics.body.GetLinearVelocity().x, 0));
-        arrowDown = false;
-    }
+        if ((typeof gb.playerShip !== 'undefined') && (typeof gb.playerShip !== 'null'))  {
+            if(e.keyCode == 37) {
+                gb.playerShip._physics.body.SetLinearVelocity(new b2Vec2(0, gb.playerShip._physics.body.GetLinearVelocity().y));
+                arrowLeft = false;
+            }
+            if(e.keyCode == 39) {
+                gb.playerShip._physics.body.SetLinearVelocity(new b2Vec2(0, gb.playerShip._physics.body.GetLinearVelocity().y));
+                arrowRight = false;
+            }
+            if(e.keyCode == 38) {
+                gb.playerShip._physics.body.SetLinearVelocity(new b2Vec2(gb.playerShip._physics.body.GetLinearVelocity().x, 0));
+                arrowUp = false;
+            }
+            if(e.keyCode == 40) {
+                gb.playerShip._physics.body.SetLinearVelocity(new b2Vec2(gb.playerShip._physics.body.GetLinearVelocity().x, 0));
+                arrowDown = false;
+            }
+        }
   });
 
   // Start the game engine and tell it run at 48fps if possible

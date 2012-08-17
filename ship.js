@@ -14,6 +14,11 @@ gb.spaceship = pulse.Sprite.extend({
       params = {};
     }
     params.src = gb.spaceship.texture;
+
+      params.size = {
+          width : 55,
+          height : 60
+      };
     
     this._super(params);
 
@@ -23,25 +28,10 @@ gb.spaceship = pulse.Sprite.extend({
       y : 0.5
     };
 
-    this.size = {
-      width : 55,
-      height : 60
-    };
-
-    this.physics = {
-          basicShape: 'box',
-          isStatic: false,
-          isEnabled: true
-    };
-
     this.position = {
       x : params.position.x || 0,
       y : params.position.y || 0
     };
-
-    // Set a frame rate for animations
-    var animationFrameRate = 48;
-    var _self = this;
 
     this.textureFrame.width = 55;
     this.textureFrame.height = 60;
@@ -62,61 +52,65 @@ gb.spaceship = pulse.Sprite.extend({
     this._private.directionPrevious = gb.spaceship.Direction.Right;
 
     // Create animation for the beaming in intro
-    var introAction = new pulse.AnimateAction({
-      name : 'intro',
-      size : {width:55, height:60},
-      bounds : {x: 2000, y: 60},
-      frames : [22,22,22,22,22,22,22,22,22,22,22,23,24,25,26,27,28,29],
-      frameRate : animationFrameRate,
-      plays : 1
-    });
-    
-    // When animation is complete set state back to Idle
-    introAction.events.bind('complete', function(){
-      _self.state = gb.spaceship.State.Idle;
-    });
-
-    // Add the animation
-    this.addAction(introAction);
-
-    // Create animation for running
-    var runningAction = new pulse.AnimateAction({
-      name : 'running',
-      size : {width:55, height:60},
-      bounds : {x: 2000, y: 60},
-      frames : [7,8,9,10,11,12,13,14,15,16],
-      frameRate : animationFrameRate
-    });
-
-    // Add the animation
-    this.addAction(runningAction);
+//    var introAction = new pulse.AnimateAction({
+//      name : 'intro',
+//      size : {width:55, height:60},
+//      bounds : {x: 2000, y: 60},
+//      frames : [22,22,22,22,22,22,22,22,22,22,22,23,24,25,26,27,28,29],
+//      frameRate : animationFrameRate,
+//      plays : 1
+//    });
+//
+//    // When animation is complete set state back to Idle
+//    introAction.events.bind('complete', function(){
+//      _self.state = gb.spaceship.State.Idle;
+//    });
+//
+//    // Add the animation
+//    this.addAction(introAction);
+//
+//    // Create animation for running
+//    var runningAction = new pulse.AnimateAction({
+//      name : 'running',
+//      size : {width:55, height:60},
+//      bounds : {x: 2000, y: 60},
+//      frames : [7,8,9,10,11,12,13,14,15,16],
+//      frameRate : animationFrameRate
+//    });
+//
+//    // Add the animation
+//    this.addAction(runningAction);
 
     // setup physics body
-    this._private.b2world = params.b2world;
+    //this._private.b2world = params.b2world;
 
-    var bodyDef = new b2BodyDef();
-    var bw = Math.floor(0.636363636 * this.size.width) * gb.Box2DFactor;
-    var bh = Math.floor(0.716666667 * this.size.height) * gb.Box2DFactor;
-      this._physics.bodyDef.position.Set(
-      this.position.x * gb.Box2DFactor,
-      this.position.y * gb.Box2DFactor  //+ bw / 2
-    );
-      this._physics.bodyDef.massData.mass = 2.0;
-      this._physics.bodyDef.massData.center.SetZero();
-      this._physics.bodyDef.massData.I = Number.POSITIVE_INFINITY;
+//      var bodyDef = new b2BodyDef();
+//      var bw = Math.floor(0.636363636 * this.size.width) * gb.Box2DFactor;
+//      var bh = Math.floor(0.716666667 * this.size.height) * gb.Box2DFactor;
+//      this._physics.bodyDef.position.Set(
+//          this.position.x * gb.Box2DFactor,
+//          this.position.y * gb.Box2DFactor
+//      ); //+ bw / 2
 
-/*    this.b2body = this._private.b2world.CreateBody(bodyDef);
-    this.b2body.w = bw;
-    this.b2body.h = bh;*/
-    
-    var shapeDef = new b2PolygonDef();
-    shapeDef.SetAsBox(bw / 2, bh / 2);
-    shapeDef.restitution = 0.0;
-    shapeDef.density = 2.0;
-    shapeDef.friction = 0.0;
+   //   this._physics.bodyDef.
 
-    //this.b2body.CreateShape(shapeDef);  //_physics.body.CreateShape(shapeDef);    //b2body.CreateShape(shapeDef);
-    this._physics.bodyDef.fixedRotation = true;
+/*      var shapeDef = new Box2D.Dynamics.b2FixtureDef(); // b2PolygonDef();
+      shapeDef.restitution = 0.0;
+      shapeDef.density = 2.0;
+      shapeDef.friction = 0.0;
+      shapeDef.shape = new Box2D.Collision.Shapes.b2PolygonShape();
+      shapeDef.shape.SetAsBox(bw / 2, bh / 2);*/
+
+      this.physics = {
+          basicShape: 'box'
+      };
+
+      //this.b2body.CreateShape(shapeDef);  //_physics.body.CreateShape(shapeDef);    //b2body.CreateShape(shapeDef);
+
+    //this.b2body = pulse.physics. this._private.b2world.CreateBody(bodyDef);
+    //this._physics.body.w = bw;
+    //this.b2body.h = bh;
+      this._physics.bodyDef.fixedRotation = true;
   },
 
   /**
@@ -136,12 +130,12 @@ gb.spaceship = pulse.Sprite.extend({
   update : function(elapsed) {
 
    // Set position based on the Box2D body position
-    this.position = {
-      x : Math.round(this._physics.body.GetPosition().x / gb.Box2DFactor),
-      y : Math.round((this._physics.body.GetPosition().y
-          //+ this.b2body.h / 2
-          ) / gb.Box2DFactor) + 1
-    };
+//    this.position = {
+//      x : Math.round(this._physics.body.GetPosition().x / gb.Box2DFactor),
+//      y : Math.round((this._physics.body.GetPosition().y
+//          //+ this.b2body.h / 2
+//          ) / gb.Box2DFactor) + 1
+//    };
 
 
     // If the ship is jumping make sure the correct state is set
@@ -172,34 +166,21 @@ gb.spaceship = pulse.Sprite.extend({
     }
 
     this._super(elapsed);
-  },
+  }
 
   /**
    * Updating animations based on change in state
    * @param  {string} state The new state
    */
-  updateState : function(state) {
-    this.reset();
-
-    switch(state) {
-      case gb.spaceship.State.Idle:
-        this.textureFrame = this._private.oframe;
-        this.updated = true;
-        break;
-      case gb.spaceship.State.Intro:
-        this.runAction('intro', this._private.oframe);
-        break;
-      case gb.spaceship.State.Running:
-        this.runAction('running', this._private.oframe);
-        break;
-      case gb.spaceship.State.Jumping:
-        this.runAction('jumping');
-        break;
-      case gb.spaceship.State.Smile:
-        this.runAction('smile', this._private.oframe);
-        break;
-    }
-  }
+//  updateState : function(state) {
+//    this.reset();
+//
+//    switch(state) {
+//      case gb.spaceship.State.Jumping:
+//        this.runAction('jumping');
+//        break;
+//    }
+//  }
 
 });
 

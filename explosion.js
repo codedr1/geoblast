@@ -18,6 +18,11 @@ gb.explosion = pulse.Sprite.extend({
             params = {};
         }
         params.src = gb.explosion.texture;
+        params.physics = {
+            basicShape : 'box',
+            isEnabled : false,
+            isStatic : true
+        };
 
         this._super(params);
 
@@ -38,7 +43,7 @@ gb.explosion = pulse.Sprite.extend({
         };
 
         // Set a frame rate for animations
-        var animationFrameRate = 20;
+        var animationFrameRate = 48;
         var _self = this;
 
         this.textureFrame.width = 55;
@@ -54,37 +59,45 @@ gb.explosion = pulse.Sprite.extend({
 
         var explodeAction = new pulse.AnimateAction({
             name : 'exploding',
-            size : {width:55, height:60},
-            bounds : {x: 2000, y: 60},
-            frames : [7,8,9,10,11,12,13,14,15,16],
+            size : {width:42, height:42},
+            bounds : {x: 42, y: 42},
+            frames : [1,1,1],
             frameRate : animationFrameRate
         });
 
         //TODO change filename to explosion png
-        gb.explosion.texture = new pulse.Texture({filename: 'ship.png'});
+        gb.explosion.texture = new pulse.Texture({filename: 'explosionsmall.png'});
 
         // Add the animation
         this.addAction(explodeAction);
     }
 });
 
-function explode(spriteID) {
-    var initX = spriteID.position.x;
-    var initY = spriteID.position.y;
+gb.explode = function(explodingObject, layer, ship) {
+    var d =0;
+    var explodingBody = explodingObject.GetBody();
+    var initX = explodingBody._node.position.x;
+    var initY = explodingBody._node.position.y;
 
     //flag for collision
     var collision = false;
 
-    //put sprite in position out of view
-    spriteID.position.x = 2000;
-    spriteID.position.y = 2000;
-
-    if ((spriteID.position.x == gb.spaceship.position.x) && (spriteID.position.y == gb.spaceship.position.y)) {
-        explosionSize = "medium";
+if ((ship != null) && (initX == ship.position.x) && (initY == ship.position.y)) {
+        explosionSize = "small";
         collision = true;
+        // explodingBody.SetPosition(2000, 2000);
+  //      layer.removeNode(explodingBody._node.name);  //
+        delete gb.playerShip;
+       // ship.visible = false;
+        layer.removeNode(explodingBody._node);
+        // ._physics.body.SetAwake(false);
+        // ship._physics.body.SetLinearVelocity(new b2Vec2(0, 0));
+//        ship.physics.isEnabled = false;
+//        ship.physics.isStatic = true;
+        // layer.removeNode(ship);
     }
     else {
-        switch (levelNum) {
+        switch (gb.levelNum) {
             case 1,4,7:
                 explosionSize = "small";
             case 2,5,8:
@@ -93,17 +106,30 @@ function explode(spriteID) {
                 explosionSize = "large";
         }
     }
-    this.runAction('explosion'+explosionSize, this._private.oframe);
-    if ((spareLives > 0) && (collision == true)) {
-        lifeTotal -= 1;
+
+    var explode1 = new gb.explosion({
+        b2world : pulse.physics.WORLD,  //world, //
+        position : {
+            x : initX,
+            y : initY
+        }
+    });
+    layer.addNode(explode1);
+    explode1.runAction('exploding');  //('explosion'+explosionSize, gb.explosion._private.oframe);
+    if ((gb.lifeTotal >= 0) && (collision == true)) {
+        gb.lifeTotal -= 1;
         // Set the ship's state to beam her in
-        playerShip.state = gb.spaceship.State.Intro;
+        // playerShip.state = gb.spaceship.State.Intro;
+        alert("Next life!");
+//        layer.addNode(explodingBody._node);
+//        explodingBody._node._physics.body.GetPosition();
+        // explodingBody._node._physics.body.SetPosition();
     }
     else if (collision == true) {
         endGame();
     }
     else {
-        var shapePick = math.random()*5-1;
+        var shapePick = Math.random()*5-1;
         switch (shapePick) {
             case 0 : attackingShape = new gb.evilSquare;
             case 1 : attackingShape = new gb.evilTriangle;
