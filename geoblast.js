@@ -11,6 +11,7 @@ pulse.ready(function() {
         while (new Date() < ms){}
     } 
 
+    gb.player1score = 0;
     gb.lifeTotal = 3;
     gb.levelNum = 1;
   // Ratio of Box2D physics to pulse
@@ -123,6 +124,43 @@ pulse.ready(function() {
       playerShip._physics.body._node = playerShip;
       return playerShip;
   }
+  
+  function createStone() {
+        switch (gb.levelNum) {
+            case 1:
+            case 4:
+            case 7:
+                alert('sdfswdf');
+                stoneSize = "large";
+            case 2:
+            case 5:
+            case 8:
+                stoneSize = "medium";
+            case 3:
+            case 6:
+            case 9:
+                stoneSize = "small";
+        }
+        switch (gb.levelNum) {
+            case 1:
+            case 2:
+            case 3:
+                stoneSpeed = "slow";
+            case 4:
+            case 5:
+            case 6:
+                stoneSpeed = "moderate";
+            case 7:
+            case 8:
+            case 9:
+                stoneSpeed = "fast";
+        }
+        alert(gb.levelNum);
+        var attackingStone = new gb.evilStone(stoneSize, stoneSpeed);
+        shipLayer.addNode(attackingStone);
+        attackingStone._physics.body._node = attackingStone;
+        return attackingStone;
+  }
 
     var playerShip2 = new gb.spaceship({
         b2world : pulse.physics.WORLD,  //world, //
@@ -162,6 +200,19 @@ pulse.ready(function() {
   var arrowDown = false;
 
   var speed = 0.15;
+  
+  //initX = 200;
+  //initY = 200;
+  //
+  //  var explode1 = new gb.explosion({
+  //      b2world : pulse.physics.WORLD,  //world, //
+  //      position : {
+  //          x : initX,
+  //          y : initY
+  //      }
+  //  });
+  //  shipLayer.addNode(explode1);
+  //  explode1.runAction('exploding');
 
   /**
    * Updates the camera and parallax backgrounds based on position of ship
@@ -196,6 +247,9 @@ pulse.ready(function() {
       if ((typeof gb.playerShip === 'undefined') || (gb.playerShip._physics.body == null) || (gb.playerShip.visible == false)) {  //(typeof gb.playerShip === 'undefined') || (typeof gb.playerShip === 'null')) {
           alert('make it');
           gb.playerShip = createPlayerShip();
+      }
+      if ((typeof gb.attackingStone === 'undefined') || (gb.attackingStone._physics.body == null) || (gb.attackingStone.visible == false)) {  //(typeof gb.playerShip === 'undefined') || (typeof gb.playerShip === 'null')) {
+          //gb.attackingStone = createStone();
       }
        // var gb.playerShip = gb.playerShip;
        var newAngle = gb.playerShip._physics.body.GetAngle();

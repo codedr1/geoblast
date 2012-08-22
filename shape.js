@@ -9,29 +9,37 @@
 var gb = gb || {};
 
 /**
- * evilShape.class that handles moving and animating the shape
+ * evilStone.class that handles moving and animating the stone
  */
-gb.evilShape = pulse.Sprite.extend({
+gb.evilStone = pulse.Sprite.extend({
     /**
-     * Initializes the shape
-     * @param  {object} params parameters for the shape
+     * Initializes the stone
+     * @param  {object} params parameters for the stone
      */
     init : function(params) {
         if (!params) {
             params = {};
         }
 
-        var shapeDesc = params.shapeType;
+        var rndm1 = Math.floor(Math.random()*2);
+        if (params.stoneSpeed == "moderate") {
+            rndm1 += Math.floor(Math.random()*2);
+        }
+        else if (params.stoneSpeed == "fast") {
+            rndm1 = 4;
+        }
 
-        switch (params.shapeType) {
-            case 'circle':
-                params.src = gb.evilCircle.texture;
-            case 'triangle':
-                params.src = gb.evilTriangle.texture;
-            case 'square':
-                params.src = gb.evilSquare.texture;
-            case 'pentagon':
-                params.src = gb.evilPentagon.texture;
+        switch (rndm1) {
+            case 0:
+                params.src = new pulse.Texture({filename: 'evilSapphire.png'});
+            case 1:
+                params.src = new pulse.Texture({filename: 'evilDiamond.png'});  //gb.evilDiamond.texture;
+            case 2:
+                params.src = new pulse.Texture({filename: 'evilEmerald.png'});  //gb.evilEmerald.texture;
+            case 3:
+                params.src = new pulse.Texture({filename: 'evilAmethyst.png'});  //gb.evilAmethyst.texture;
+            case 4:
+                params.src = new pulse.Texture({filename: 'evilRuby.png'});    //gb.evilRuby.texture;
         }
 
         this._super(params);
@@ -41,29 +49,22 @@ gb.evilShape = pulse.Sprite.extend({
             x:0.5,
             y:1.0
         };
+        
+        var sizeVar = 0;
 
-        bigShapeSize = 60;
-        mediumShapeSize = 40;
-        smallShapeSize = 25;
-
-        function getSizeVar(levelNum) {
-            return switch (levelNum) {
-                case 1:
-                case 2:
-                case 3:
-                    bigShapeSize;
-                case 4:
-                case 5:
-                case 6:
-                    mediumShapeSize;
-                case 7:
-                case 8:
-                case 9:
-                    smallShapeSize;
-            }
+        bigStoneSize = 60;
+        mediumStoneSize = 40;
+        smallStoneSize = 25;
+        
+        if (params.stoneSize == "large") {
+            sizeVar = bigStoneSize;
         }
-
-        var sizeVar = getSizeVar(levelNum);
+        else if (params.stoneSize == "medium") {
+            sizeVar = mediumStoneSize;
+        }
+        else {
+            sizeVar = smallStoneSize;
+        }
 
         this.size = {
             width:sizeVar,
@@ -77,8 +78,8 @@ gb.evilShape = pulse.Sprite.extend({
         };
 
         this.position = {
-            x:params.position.x || 0,
-            y:params.position.y || 0
+            x: int(Math.random(765)),  // params.position.x || 0,
+            y: int(Math.random(525))  // params.position.y || 0
         };
 
         // Set a frame rate for animations
@@ -97,11 +98,11 @@ gb.evilShape = pulse.Sprite.extend({
         };
 
         //Init states
-        this.state = gb.evilShape.State.Idle;
-        this._private.statePrevious = gb.evilShape.State.Idle;
+        this.state = gb.evilStone.State.Idle;
+        this._private.statePrevious = gb.evilStone.State.Idle;
 
-        this.direction = gb.evilShape.Direction.Right;
-        this._private.directionPrevious = gb.evilShape.Direction.Right;
+        this.direction = gb.evilStone.Direction.Right;
+        this._private.directionPrevious = gb.evilStone.Direction.Right;
 
         // Create animation for the beaming in intro
         var introAction = new pulse.AnimateAction({
@@ -115,7 +116,7 @@ gb.evilShape = pulse.Sprite.extend({
 
         // When animation is complete set state back to Idle
         introAction.events.bind('complete', function () {
-            _self.state = gb.evilShape.State.Idle;
+            _self.state = gb.evilStone.State.Idle;
         });
 
         this._private.b2world = params.b2world;
@@ -145,7 +146,7 @@ gb.evilShape = pulse.Sprite.extend({
     },
 
     /**
-     * Resets all animations on the shape
+     * Resets all animations on the stone
      */
     reset : function() {
         for(var n in this.runningActions) {
@@ -166,28 +167,28 @@ gb.evilShape = pulse.Sprite.extend({
             y : Math.round((this.b2body.GetPosition().y + this.b2body.h / 2) / gb.Box2DFactor) + 1
         };
 
-        // If the shape is jumping make sure the correct state is set
+        // If the stone is jumping make sure the correct state is set
         if(this.b2body.GetLinearVelocity().y > 0.01 ||
             this.b2body.GetLinearVelocity().y < -0.01) {
-            if(this.state != gb.evilShape.State.Intro) {
-                this.state = gb.evilShape.State.Jumping;
+            if(this.state != gb.evilStone.State.Intro) {
+                this.state = gb.evilStone.State.Jumping;
             }
         } else {
             // Jump complete or wasn't jumping, check if was jumping and update
             // state accordingly
             this.b2body.SetLinearVelocity(new b2Vec2(this.b2body.GetLinearVelocity().x, 0));
-            if(this.state == gb.evilShape.State.Jumping) {
-                this.state = gb.evilShape.State.Idle;
+            if(this.state == gb.evilStone.State.Jumping) {
+                this.state = gb.evilStone.State.Idle;
             }
         }
 
-        // Check if shape has changed state
+        // Check if stone has changed state
         if(this.state != this._private.statePrevious) {
             this.updateState(this.state);
             this._private.statePrevious = this.state;
         }
 
-        // Check if shape is pointed in a new direction
+        // Check if stone is pointed in a new direction
         if(this.direction != this._private.directionPrevious) {
             this.scale.x = this.direction;
             this._private.directionPrevious = this.direction;
@@ -204,20 +205,20 @@ gb.evilShape = pulse.Sprite.extend({
         this.reset();
 
         switch(state) {
-            case gb.evilShape.State.Idle:
+            case gb.evilStone.State.Idle:
                 this.textureFrame = this._private.oframe;
                 this.updated = true;
                 break;
-/*            case gb.evilShape.State.Intro:
+/*            case gb.evilStone.State.Intro:
                 this.runAction('intro', this._private.oframe);
                 break;
-            case gb.evilShape.State.Running:
+            case gb.evilStone.State.Running:
                 this.runAction('running', this._private.oframe);
                 break;
-            case gb.evilShape.State.Jumping:
+            case gb.evilStone.State.Jumping:
                 this.runAction('jumping');
                 break;
-            case gb.evilShape.State.Smile:
+            case gb.evilStone.State.Smile:
                 this.runAction('smile', this._private.oframe);
                 break;*/
         }
@@ -226,19 +227,20 @@ gb.evilShape = pulse.Sprite.extend({
 });
 
 // Static member to hold possible states
-gb.evilShape.State = {};
-/*gb.evilShape.State.Idle = 'idle';
-gb.evilShape.State.Intro = 'intro';
-gb.evilShape.State.Running = 'running';
-gb.evilShape.State.Jumping = 'jumping';
-gb.evilShape.State.Smile = 'smiling';*/
+gb.evilStone.State = {};
+/*gb.evilStone.State.Idle = 'idle';
+gb.evilStone.State.Intro = 'intro';
+gb.evilStone.State.Running = 'running';
+gb.evilStone.State.Jumping = 'jumping';
+gb.evilStone.State.Smile = 'smiling';*/
 
 // Static member to hold possible spin directions (Right = clockwise)
-gb.evilShape.Direction = {};
-gb.evilShape.Direction.Right = 1;
-gb.evilShape.Direction.Left = -1;
+gb.evilStone.Direction = {};
+gb.evilStone.Direction.Right = 1;
+gb.evilStone.Direction.Left = -1;
 
-gb.evilCircle.texture = new pulse.Texture({filename: 'evilCircle.png'});
-gb.evilSquare.texture = new pulse.Texture({filename: 'evilSquare.png'});
-gb.evilTriangle.texture = new pulse.Texture({filename: 'evilTriangle.png'});
-gb.evilPentagon.texture = new pulse.Texture({filename: 'evilPentagon.png'});
+//gb.evilSapphire.texture = new pulse.Texture({filename: 'evilSapphire.png'});
+//gb.evilDiamond.texture = new pulse.Texture({filename: 'evilDiamond.png'});
+//gb.evilEmerald.texture = new pulse.Texture({filename: 'evilEmerald.png'});
+//gb.evilAmethyst.texture = new pulse.Texture({filename: 'evilAmethyst.png'});
+//gb.evilRuby.texture = new pulse.Texture({filename: 'evilRuby.png'});

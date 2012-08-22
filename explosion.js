@@ -62,7 +62,8 @@ gb.explosion = pulse.Sprite.extend({
             size : {width:42, height:42},
             bounds : {x: 42, y: 42},
             frames : [1,1,1],
-            frameRate : animationFrameRate
+            frameRate : animationFrameRate,
+            plays : 1
         });
 
         //TODO change filename to explosion png
@@ -74,7 +75,7 @@ gb.explosion = pulse.Sprite.extend({
 });
 
 gb.explode = function(explodingObject, layer, ship) {
-    var d =0;
+    // var d = 0;
     var explodingBody = explodingObject.GetBody();
     var initX = explodingBody._node.position.x;
     var initY = explodingBody._node.position.y;
@@ -98,11 +99,17 @@ if ((ship != null) && (initX == ship.position.x) && (initY == ship.position.y)) 
     }
     else {
         switch (gb.levelNum) {
-            case 1,4,7:
+            case 1:
+            case 4:
+            case 7:
                 explosionSize = "small";
-            case 2,5,8:
+            case 2:
+            case 5:
+            case 8:
                 explosionSize = "medium";
-            case 3,6,9:
+            case 3:
+            case 6:
+            case 9:
                 explosionSize = "large";
         }
     }
@@ -129,12 +136,6 @@ if ((ship != null) && (initX == ship.position.x) && (initY == ship.position.y)) 
         endGame();
     }
     else {
-        var shapePick = Math.random()*5-1;
-        switch (shapePick) {
-            case 0 : attackingShape = new gb.evilSquare;
-            case 1 : attackingShape = new gb.evilTriangle;
-            case 2 : attackingShape = new gb.evilPentagon;
-            case 3 : attackingShape = new gb.evilCircle;
-        }
+        gb.player1score += 100;
     }
 }
